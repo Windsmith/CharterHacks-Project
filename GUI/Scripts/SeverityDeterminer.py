@@ -126,6 +126,9 @@ class Process:
         for element in self.Minor_answers:
             severity_counter += self.List_C_optn_weights[element]
 
+        if severity_counter > 10:
+            severity_counter = 10
+
         return severity_counter
 
 # Example Test
