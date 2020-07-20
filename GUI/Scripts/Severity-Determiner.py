@@ -134,5 +134,3 @@ l = Process()
 l.result_1(["Female", 50])
 l.result_2([["Cough", "Fever", "Fatigue", "Shortness of Breath"], "Yes", ["Cystic Fibrosis", "Hypertension"]])
 l.result_3([5,25])
-
-print(l.get_severity())
