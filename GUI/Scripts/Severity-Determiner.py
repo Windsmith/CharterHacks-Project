@@ -1,7 +1,6 @@
 import math as M
 
 class Process:
-    multi = ""
     def get_set_1(self):
         multi = ""
         Pers_ques_and_optns = {
