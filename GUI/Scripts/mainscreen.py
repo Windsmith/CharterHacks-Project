@@ -1,5 +1,5 @@
 from kivy.app import App
-from kivy.uix.screenmanager import ScreenManager, Screen, FadeTransition, SlideTransition           #remember to import and use a transition!
+from kivy.uix.screenmanager import ScreenManager, Screen, FadeTransition   
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.gridlayout import GridLayout
@@ -7,30 +7,53 @@ from kivy.uix.image import Image
 from kivy.uix.togglebutton import ToggleButton
 from kivy.uix.button import Button
 from kivy.uix.label import Label
-from kivymd.uix.button import MDRectangleFlatButton
+from kivy.uix.slider import Slider
 from kivy.lang import Builder
-from kivymd.theming import ThemeManager
 from kivy.core.text import LabelBase
 from kivy.core.window import Window
 from kivy.properties import ObjectProperty
 
 from functools import partial
 
+from SeverityDeterminer import Process
+
 __version__ = "0.0.1"
 
 #adding fonts
 LabelBase.register(name="Futurist", fn_regular=r".\GUI\Resources\Futurist fixed-width.TTF")
 LabelBase.register(name="Open Sans", fn_regular=r"GUI\Resources\OpenSans-SemiBold.ttf")
-LabelBase.register(name="Montserrat", fn_regular=r"GUI\Resources\Montserrat-Thin.ttf")
+LabelBase.register(name="Montserrat", fn_regular=r"GUI\Resources\Montserrat-Regular.ttf")
 
-question_screen_counter1 = (i for i in range(1,8))
-question_screen_counter2 = (j for j in range(1,8))
+question_screen_counter1 = (i for i in range(1,7))
+question_screen_counter2 = (j for j in range(1,7))
+name_counter = (k for k in range(2,7))
 
-global screens, current, next_
-screens = [[],[],[]]
+screens= []
+process = Process()
 
-#building questions screen
+def build_question_screens():
+    global process, screens,question_screen_counter1
+    set_1 = process.get_set_1()
+    set_2 = process.get_set_2()
+    set_3 = process.get_set_3()
 
+    for question in set_1:
+        screen = QuestionScreenTemplate(name=f"test_{next(question_screen_counter1)}")
+        screen.set_question(question)
+        screen.create_input_layout(set_1[question][0]["multi"], set_1[question][1])
+        screens.append(screen)
+
+    for question in set_2:
+        screen = QuestionScreenTemplate(name=f"test_{next(question_screen_counter1)}")
+        screen.set_question(question)
+        screen.create_input_layout(set_2[question][0]["multi"], set_2[question][1])
+        screens.append(screen)
+
+    for question in set_3:
+        screen = QuestionScreenTemplate(name=f"test_{next(question_screen_counter1)}")
+        screen.set_question(question)
+        screen.create_input_layout(set_3[question][0]["multi"], set_3[question][1])
+        screens.append(screen)     
 
 
 Builder.load_string(f"""
@@ -57,10 +80,10 @@ Builder.load_string(f"""
             pos: 0, -20
             background_color: 0, 0, 0, 1
 <QuestionScreenTemplate>:
-    name: f"test_{next(question_screen_counter1)}"
     question_label: question_label
     buttons_box: buttons_box
-    submit: submit
+    screen_grid: screen_grid
+
     FloatLayout:
         Image:
             source: "GUI/Resources/pink bg.jpg"
@@ -69,24 +92,17 @@ Builder.load_string(f"""
             keep_ratio: True
             pos_hint: {{'center_x':.5, 'center_y':.5}}
         GridLayout:
+            id: screen_grid
             cols: 1
             rows: 3
             Label:
                 id: question_label
-                font_size: 32
+                font_size: 25
                 font_name: "Montserrat"
-            BoxLayout:
+            GridLayout:
                 id: buttons_box
-                orientation: 'horizontal'
-            BoxLayout:
-                id: submit
-                orientation: 'horizontal'
-                Button:
-                    id: submit
-                    text: "Submit"
-                    font_name: "Open Sans"
-                    font_size: 32
-                    pos_hint: {{'center_x':0.5,'center_y':0.5}}
+                cols: 3
+                rows: 4
 
 """)
 
@@ -94,56 +110,51 @@ class MainApp(App):            #app instance, returns screen manager
     def build(self):
         self.sm = ScreenManager(transition=FadeTransition()) 
         self.sm.add_widget(StartupWindow(name="startup")) 
-
-        SAMPLE = {"This is a question. Are you retarded?":[{"multi":True}, ["Yes", "Yes", "Yes"]],
-                "This is another question. Am I retarded?":[{"multi":False}, ["Yes", "Absolutely"]]}
-
-        for k in SAMPLE:
-            screen = QuestionScreenTemplate(name=f"test_{next(question_screen_counter2)}")
-            screen.set_question(k)
-            screen.create_input_layout(SAMPLE[k][0]["multi"], SAMPLE[k][1])
-            self.sm.add_widget(screen)
+        for i in screens:
+            self.sm.add_widget(i)
         return self.sm
 
 
 class StartupWindow(Screen):     
     pass
 
-class CustomToggleButton(ToggleButton):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.background_down = 1, 0.753, 0.796, 1
-        self.background_normal = 1, 0.753, 0.796, 0
-        
+
 class QuestionScreenTemplate(Screen):
     answers = []
     question_label = ObjectProperty(None)
     buttons_box = ObjectProperty(None)
-    submit = ObjectProperty(None)
+    screen_grid = ObjectProperty(None)
 
-    def create_input_layout(self, multi:bool, values:list):
+
+    def create_input_layout(self, multi, values:list):    #creates the screen based on whether question is multi answer or not
         if multi:
             self.get_multi_option_buttons(values)
-        else:
+        elif multi is None:
+            self.slider_specific_option()
+        elif not multi:
             self.get_option_buttons(values)
 
-    def get_multi_option_buttons(self, options:list):
+    def get_multi_option_buttons(self, options:list):     #makes the options buttons (toggle)
+        self.box = BoxLayout(orientation='horizontal')
+        self.submit = Button(text="Submit", font_name="Open Sans", font_size=25, pos_hint={'center_x':0.5,'center_y':0.5}, size_hint=(0.5,0.5), background_color=(0, 0, 0, 0))
         self.submit.bind(on_press=partial(self.multi_input_button_pressed))
+        self.box.add_widget(self.submit)
         self.multi_buttons = []
         for i in options:
             multi_button = ToggleButton(text=i)
+            multi_button.background_color = 0, 0, 1, 0.25
             self.multi_buttons.append(multi_button)
             self.buttons_box.add_widget(multi_button)
+        self.screen_grid.add_widget(self.box)
 
-    def multi_input_button_pressed(self, instance):
+    def multi_input_button_pressed(self, instance):     #submit button for multi inputs
         multi_answer_entry = [i.text for i in self.multi_buttons if i.state == 'down']
-        print(multi_answer_entry)
         QuestionScreenTemplate.answers.append(multi_answer_entry)
         self.manager.transition.duration = 0.5
-        #next_screen = screens
-        self.manager.current = "startup"
+        self.manager.current = f"test_{next(name_counter)}"
+        self.send_answers()
 
-    def get_option_buttons(self, options:list):
+    def get_option_buttons(self, options:list):       #for single inputs
         self.buttons = []        #can be used later to iter through to get answers
         for i in options:
             button = Button(text=i, background_color=(0, 0, 0, 0), font_name="Open Sans", font_size=32, border=(255,192,203,1))
@@ -151,15 +162,48 @@ class QuestionScreenTemplate(Screen):
             self.buttons.append(button)
             self.buttons_box.add_widget(button)
             
-    def single_input_button_pressed(self, instance):
+    def single_input_button_pressed(self, instance):    #bound function to single input options
         QuestionScreenTemplate.answers.append(instance.text)
         self.manager.transition.duration = 0.5
-        self.manager.current = "startup"
+        self.manager.current = f"test_{next(name_counter)}"
+        self.send_answers()
 
-    def set_question(self, question:str):
+    def slider_specific_option(self):
+        self.box = BoxLayout(orientation='vertical')
+        self.slider = Slider(min=10, max=100, step=1)
+        self.val = Label(text=str(self.slider.value), font_size=34, color=(0,0,0,1))
+        self.slider.bind(value=self.slider_value_change)
+        self.submit = Button(text="Submit", font_name="Open Sans", font_size=25, pos_hint={'center_x':0.5,'center_y':0.5}, size_hint=(0.5,0.5), background_color=(0, 0, 0, 0))
+        self.submit.bind(on_press=self.slider_submit_pressed)
+        self.box.add_widget(self.slider)
+        self.box.add_widget(self.val)
+        self.box.add_widget(self.submit)
+        self.buttons_box.add_widget(self.box)
+    
+    def slider_submit_pressed(self, instance):
+        QuestionScreenTemplate.answers.append(self.slider.value)
+        self.manager.transition.duration = 0.5
+        self.manager.current = f"test_{next(name_counter)}"
+        self.send_answers()
+        
+    def set_question(self, question:str):       #set label to question
         self.question_label.text = question
 
+    def send_answers(self):
+        if self.name == 'test_2':
+            process.result_1(QuestionScreenTemplate.answers)
+            QuestionScreenTemplate.answers = []
+        elif self.name == 'test_4':
+            process.result_2(QuestionScreenTemplate.answers)
+            QuestionScreenTemplate.answers = []
+        elif self.name == 'test_6':
+            process.result_3(QuestionScreenTemplate.answers)
+            QuestionScreenTemplate.answers = []
 
+    def slider_value_change(self, instance, value):
+        self.val.text = str(value)
 if __name__ == "__main__":
+    build_question_screens()
     MainApp().run()
-    
+
+
