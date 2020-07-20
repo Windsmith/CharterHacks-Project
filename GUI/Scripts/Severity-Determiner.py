@@ -28,7 +28,7 @@ class Process:
     def get_set_1(self):
         Pers_ques_and_optns = {
             "What is your gender?" : [{"multi" : False}, ["Male", "Female", "Other", "Rather not say"]],
-            "What is your age?" : [{"multi" : False}]
+            "What is your age?" : [{"multi" : None}]
         }
         return Pers_ques_and_optns
 
@@ -41,8 +41,8 @@ class Process:
 
     def get_set_3(self):
         Minor_ques_and_optns = {
-            "How many times have you left your house in the past 2 weeks?" : [{"multi" : False}, self],
-            "Approximately how many separate people other than your family/room-mates have you come in close contact with?" : [{"multi" : False}],
+            "How many times have you left your house in the past 2 weeks?" : [{"multi" : None}],
+            "Approximately how many separate people other than your family/room-mates have you come in close contact with?" : [{"multi" : None}],
         }
         return Minor_ques_and_optns
 
