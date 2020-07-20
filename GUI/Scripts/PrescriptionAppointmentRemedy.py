@@ -1,7 +1,7 @@
 import smtplib, ssl
 
 port = 465
-password = input("type your password: ")
+#password = input("type your password: ")
 
 sender_email = "hackathon1231@gmail.com"
 reciever_email = "anandkrishna2312@gmail.com"
@@ -40,14 +40,14 @@ def prepare_and_send_result_mail(severity, patient_data):  #Call this.
         mail = mail_prescription
         for i in patient_data:
             mail += i +'\n'
-        send_mail(mail)
+        #send_mail(mail)
         return message_prescription
         
     elif severity>7:
         mail = mail_appointment
         for i in patient_data:
             mail += i +'\n'
-        send_mail(mail)
+        #send_mail(mail)
         return message_appointment
 
 def send_mail(mail):  #Don't call this.

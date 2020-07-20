@@ -16,6 +16,7 @@ from kivy.properties import ObjectProperty
 from functools import partial
 
 from SeverityDeterminer import Process
+import PrescriptionAppointmentRemedy as appointment
 
 __version__ = "0.0.1"
 
@@ -53,7 +54,18 @@ def build_question_screens():
         screen = QuestionScreenTemplate(name=f"test_{next(question_screen_counter1)}")
         screen.set_question(question)
         screen.create_input_layout(set_3[question][0]["multi"], set_3[question][1])
-        screens.append(screen)     
+        screens.append(screen)
+
+def create_final_screen(severity, patientdata):
+    print(f"inside creating final\nseverity {severity}")  
+    output_text = appointment.prepare_and_send_result_mail(severity, patientdata)
+    screen = QuestionScreenTemplate(name="final_result")
+    screen.set_question(output_text)
+    screens.append(screen)
+    return screen
+
+def get_output_from_process():
+    return process.get_severity()
 
 
 Builder.load_string(f"""
@@ -112,6 +124,7 @@ class MainApp(App):            #app instance, returns screen manager
         self.sm.add_widget(StartupWindow(name="startup")) 
         for i in screens:
             self.sm.add_widget(i)
+        
         return self.sm
 
 
@@ -121,6 +134,9 @@ class StartupWindow(Screen):
 
 class QuestionScreenTemplate(Screen):
     answers = []
+    severity = 0
+    all_answers = []
+    final_screen = None
     question_label = ObjectProperty(None)
     buttons_box = ObjectProperty(None)
     screen_grid = ObjectProperty(None)
@@ -142,7 +158,7 @@ class QuestionScreenTemplate(Screen):
         self.multi_buttons = []
         for i in options:
             multi_button = ToggleButton(text=i)
-            multi_button.background_color = 0, 0, 1, 0.25
+            multi_button.background_color = 1, 0.45, 0.60, 0.25
             self.multi_buttons.append(multi_button)
             self.buttons_box.add_widget(multi_button)
         self.screen_grid.add_widget(self.box)
@@ -183,27 +199,42 @@ class QuestionScreenTemplate(Screen):
     def slider_submit_pressed(self, instance):
         QuestionScreenTemplate.answers.append(self.slider.value)
         self.manager.transition.duration = 0.5
-        self.manager.current = f"test_{next(name_counter)}"
-        self.send_answers()
+        try:
+            self.manager.current = f"test_{next(name_counter)}"
+            self.send_answers()
+        except StopIteration:
+            print("inside exception")
+            self.send_answers()
+            self.manager.current = f"final_result"
         
     def set_question(self, question:str):       #set label to question
         self.question_label.text = question
 
     def send_answers(self):
+        print("inside send_answers")
         if self.name == 'test_2':
             process.result_1(QuestionScreenTemplate.answers)
+            QuestionScreenTemplate.all_answers.extend(QuestionScreenTemplate.answers)
             QuestionScreenTemplate.answers = []
         elif self.name == 'test_4':
             process.result_2(QuestionScreenTemplate.answers)
+            QuestionScreenTemplate.all_answers.extend(QuestionScreenTemplate.answers)
             QuestionScreenTemplate.answers = []
         elif self.name == 'test_6':
+            print("inside send check")
             process.result_3(QuestionScreenTemplate.answers)
+            QuestionScreenTemplate.all_answers.extend(QuestionScreenTemplate.answers)
             QuestionScreenTemplate.answers = []
+            QuestionScreenTemplate.severity = get_output_from_process()
+            QuestionScreenTemplate.final_screen = create_final_screen(QuestionScreenTemplate.severity, QuestionScreenTemplate.all_answers)
+            self.manager.add_widget(QuestionScreenTemplate.final_screen)
 
-    def slider_value_change(self, instance, value):
+    def slider_value_change(self, instance, value):        #bind label to slider to display its value
         self.val.text = str(value)
-if __name__ == "__main__":
-    build_question_screens()
-    MainApp().run()
+
+    
+
+build_question_screens()
+MainApp().run()
 
 

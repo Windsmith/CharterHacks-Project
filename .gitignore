@@ -1,3 +1,8 @@
 .vscode/settings.json
 *.code-workspace
 *.cpython
+GUI/Resources/Montserrat.zip
+GUI/Resources/bgtest-3.png
+GUI/Scripts/__pycache__/PrescriptionAppointmentRemedy.cpython-37.pyc
+GUI/Scripts/__pycache__/SeverityDeterminer.cpython-37.pyc
+GUI/Resources/*.zip
