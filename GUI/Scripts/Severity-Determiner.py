@@ -23,44 +23,28 @@ PLEASE NOTE:= The order to use the methods should be input first, then get the s
 import math as M
 
 class Process:
-    
+
     # Getter Methods
     def get_set_1(self):
         Pers_ques_and_optns = {
             "What is your gender?" : [{"multi" : False}, ["Male", "Female", "Other", "Rather not say"]],
-            "What is your age?" : [{"multi" : False}, self.Pers_answers[1]]
+            "What is your age?" : [{"multi" : False}]
         }
         return Pers_ques_and_optns
 
     def get_set_2(self):
         Symp_ques_and_optns = {
             "What are your symptoms(if any)?" : [{"multi" : True}, ["Cough", "Fever", "Diarhhea", "Fatigue", "Headache", "Sore Throat", "Shortness of Breath", "Chest Pain", "Loss of Taste or Smell"]],
-            "Do you have any pre-existing conditions?" : [{"multi" : False}, ["Yes","No"]],
-            "What pre-existing condition do you have or have had?" : [{"multi" : True}, ["Any Heart condition", "All types of Cancer", "Obesity", "Cystic Fibrosis", "AIDS or any other Immunodeficiency", "Diabetes", "Asthma", "Hypertension", "Liver Disease"]],
+            "Do you have any pre-existing conditions? If yes, what pre-existing condition do you have or have had?" : [{"multi" : True}, ["Any Heart condition", "All types of Cancer", "Obesity", "Cystic Fibrosis", "AIDS or any other Immunodeficiency", "Diabetes", "Asthma", "Hypertension", "Liver Disease", "No pre-existing conditions"]],
         }
         return Symp_ques_and_optns
 
     def get_set_3(self):
         Minor_ques_and_optns = {
-            "How many times have you left your house in the past 2 weeks?" : [{"multi" : False}, self.Minor_answers[0]],
-            "Approximately how many separate people other than your family/room-mates have you come in close contact with?" : [{"multi" : False}, self.Minor_answers[1]],
+            "How many times have you left your house in the past 2 weeks?" : [{"multi" : False}, self],
+            "Approximately how many separate people other than your family/room-mates have you come in close contact with?" : [{"multi" : False}],
         }
         return Minor_ques_and_optns
-    
-    def get_severity(self):
-        severity_counter = 0
-        for element in self.Pers_answers:
-            severity_counter += self.List_A_optn_weights[element]
-        
-        for element in self.Symp_answers:
-            if type(element) == list:
-                for option in element:
-                    severity_counter += self.List_B_optn_weights[option]
-        
-        for element in self.Minor_answers:
-            severity_counter += self.List_C_optn_weights[element]
-
-        return severity_counter
 
     # Input Methods
     def result_1(self,answers:list):
@@ -93,7 +77,7 @@ class Process:
             (List_A[0][1][2], List_A[0][1][3]) : 1,
             
             # Weight of age
-            int(List_A[1][1]) : M.exp(List_A[1][1] / 43.42944) / 10
+            self.Pers_answers[1] : M.exp(self.Pers_answers[1] / 43.42944) / 10
         }
 
         self.List_B_optn_weights = {                                          # Allocating 3 points just to symptoms (subject to change)
@@ -110,21 +94,39 @@ class Process:
             List_B[0][1][8] : 0.34,
 
             # Weights of pre-existing conditions
-            List_B[2][1][0] : 0.97,
-            List_B[2][1][1] : 1.02,
-            List_B[2][1][2] : 0.93,
-            List_B[2][1][3] : 1.1,
-            List_B[2][1][4] : 0.95,
-            List_B[2][1][5] : 0.9,
-            List_B[2][1][6] : 0.62,
-            List_B[2][1][7] : 0.57,
-            List_B[2][1][8] : 0.59
+            List_B[1][1][0] : 0.97,
+            List_B[1][1][1] : 1.02,
+            List_B[1][1][2] : 0.93,
+            List_B[1][1][3] : 1.1,
+            List_B[1][1][4] : 0.95,
+            List_B[1][1][5] : 0.9,
+            List_B[1][1][6] : 0.62,
+            List_B[1][1][7] : 0.57,
+            List_B[1][1][8] : 0.59
         }
 
         self.List_C_optn_weights = {
-            List_C[0][1] : List_C[0][1] / 10,
-            List_C[1][1] : List_C[1][1] / 25
+            self.Minor_answers[0] : self.Minor_answers[0] / 10,
+            self.Minor_answers[1] : self.Minor_answers[1] / 25
         }
+
+    def get_severity(self):
+
+        self.weights()
+        severity_counter = 0
+        
+        for element in self.Pers_answers:
+            severity_counter += self.List_A_optn_weights[element]
+        
+        for element in self.Symp_answers:
+            if type(element) == list:
+                for option in element:
+                    severity_counter += self.List_B_optn_weights[option]
+        
+        for element in self.Minor_answers:
+            severity_counter += self.List_C_optn_weights[element]
+
+        return severity_counter
 
 # Example Test
 
