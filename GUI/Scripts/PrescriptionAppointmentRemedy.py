@@ -3,8 +3,8 @@ import smtplib, ssl
 port = 465
 #password = input("type your password: ")
 
-sender_email = "{sender}@gmail.com"
-reciever_email = "{reciever}@gmail.com"
+sender_email = "{{sender}}@gmail.com"
+reciever_email = "{{reciever}}@gmail.com"
 
 message_relax = """You can take it easy and relax at home, \nyour symptoms aren't too dangerous right now. \nMake sure you moniter your symtoms."""
 
@@ -17,7 +17,7 @@ Subject: Prescription for patient
 
 
 Please pass a prescription to the patient.
-Mail id: {doctor}@gmail.com
+Mail id: {{doctor}}@gmail.com
 Patient details and symptoms:"""
 
 mail_appointment = """\
@@ -25,7 +25,7 @@ Subject: Appointment for patient at 5pm
 
 
 The patient has an appointment with you at 5pm
-Mail id: {doctor}@gmail.com
+Mail id: {{doctor}}@gmail.com
 Patient details and symptoms:"""
 
 #Create a secure ssl context
