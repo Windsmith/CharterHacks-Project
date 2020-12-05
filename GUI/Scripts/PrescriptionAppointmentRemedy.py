@@ -4,7 +4,7 @@ port = 465
 #password = input("type your password: ")
 
 sender_email = "hackathon1231@gmail.com"
-reciever_email = "anandkrishna2312@gmail.com"
+reciever_email = "xxxxxxx@gmail.com"
 
 message_relax = """You can take it easy and relax at home, \nyour symptoms aren't too dangerous right now. \nMake sure you moniter your symtoms."""
 
